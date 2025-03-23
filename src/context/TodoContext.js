@@ -4,22 +4,7 @@ export const TodoContext = createContext()
 
 export const TodoProvider = ({children})=>{
       
-      const [todo, setTodo] = useState([{
-        id : 1,
-        title : "Todo-1",
-        completed : false
-      },
-      {
-        id : 2,
-        title : "Todo-2",
-        completed : false
-      },
-      {
-        id : 3,
-        title : "Todo-3",
-        completed : false
-      }
-    ])
+      const [todo, setTodo] = useState([])
 
     return (
         <TodoContext.Provider value={{todo, setTodo}}>

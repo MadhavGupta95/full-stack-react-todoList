@@ -1,17 +1,30 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router";
+import axios from 'axios'
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const navigate = useNavigate();
 
-  const handleSubmit = (e)=>{
-    e.preventDefault()
-    console.log({
+  const handleSubmit = async(e) => {
+    e.preventDefault();
+    try {
+      const res = await axios.post('http://localhost:3300/api/auth/login', {
         email,
-        password
-    })
-  }
+        password,
+      })
+      const token = res.data.data.token
+      // console.log(token);
+      localStorage.setItem("token", token)
+      navigate('/')
+      console.log(res.data);
+    } catch (error) {
+      const { message } = error.response.data
+      console.log(message);
+    }
+  };
 
   return (
     <div>
@@ -33,7 +46,11 @@ const Login = () => {
               <h1 class="text-xl font-bold leading-tight tracking-tight text-gray-900 md:text-2xl dark:text-white">
                 Login in to your account
               </h1>
-              <form onSubmit={handleSubmit} class="space-y-4 md:space-y-6" action="#">
+              <form
+                onSubmit={handleSubmit}
+                class="space-y-4 md:space-y-6"
+                action="#"
+              >
                 <div>
                   <label
                     for="email"

@@ -1,20 +1,34 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router";
+import axios from "axios";
 
 const Signup = () => {
+  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false)
+  const navigate = useNavigate()
 
-    const [email, setEmail] = useState("")
-    const [username, setUsername] = useState("")
-    const [password, setPassword] = useState("")
-    const [showPassword, setShowPassword] = useState(false)
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      setLoading(true)
+      const res = await axios.post("http://localhost:3300/api/auth/signup", {
+        email,
+        password,
+        username,
+      });
 
-    const handleSubmit = (e)=>{
-        e.preventDefault()
-        console.log({
-            email,
-            username,
-            password
-        })
+      navigate('/login')
+      console.log(res.data);
+    } catch (error) {
+      const {message} = error.response.data
+      console.log(message);
+    } finally{
+      setLoading(false)
     }
+  };
 
   return (
     <>
@@ -36,7 +50,11 @@ const Signup = () => {
               <h1 class="text-xl font-bold leading-tight tracking-tight text-gray-900 md:text-2xl dark:text-white">
                 Sign in to your account
               </h1>
-              <form onSubmit={handleSubmit} class="space-y-4 md:space-y-6" action="#">
+              <form
+                onSubmit={handleSubmit}
+                class="space-y-4 md:space-y-6"
+                action="#"
+              >
                 <div>
                   <label
                     for="email"
@@ -45,7 +63,7 @@ const Signup = () => {
                     Your email
                   </label>
                   <input
-                  onChange = {(e)=>setEmail(e.target.value)}
+                    onChange={(e) => setEmail(e.target.value)}
                     type="email"
                     name="email"
                     id="email"
@@ -62,7 +80,7 @@ const Signup = () => {
                     Your username
                   </label>
                   <input
-                  onChange = {(e)=>setUsername(e.target.value)}
+                    onChange={(e) => setUsername(e.target.value)}
                     type="text"
                     name="username"
                     id="username"
@@ -79,16 +97,16 @@ const Signup = () => {
                     Password
                   </label>
                   <div className="flex items-center">
-                  <input
-                  onChange = {(e)=>setPassword(e.target.value)}
-                    type={showPassword ? "text" : "password"}
-                    name="password"
-                    id="password"
-                    placeholder="••••••••"
-                    class="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                    required
-                  />
-                  {showPassword ? (
+                    <input
+                      onChange={(e) => setPassword(e.target.value)}
+                      type={showPassword ? "text" : "password"}
+                      name="password"
+                      id="password"
+                      placeholder="••••••••"
+                      class="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                      required
+                    />
+                    {showPassword ? (
                       <svg
                         style={{ width: "30px", height: "30px" }}
                         onClick={() => setShowPassword(() => !showPassword)}
@@ -132,10 +150,11 @@ const Signup = () => {
                         />
                       </svg>
                     )}
-                </div>
                   </div>
+                </div>
 
                 <button
+                disabled = {loading}
                   type="submit"
                   class="w-full text-white bg-blue-600 hover:bg-blue-700 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
                 >
