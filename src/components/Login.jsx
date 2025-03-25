@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import axios from 'axios'
 
@@ -7,6 +7,13 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
+
+  useEffect(()=>{
+    const token = localStorage.getItem('token')
+    if(token){
+      navigate("/")
+    }
+  }, [])
 
   const handleSubmit = async(e) => {
     e.preventDefault();

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import axios from "axios";
 
@@ -10,6 +10,15 @@ const Signup = () => {
   const [loading, setLoading] = useState(false)
   const navigate = useNavigate()
 
+
+    useEffect(()=>{
+      const token = localStorage.getItem('token')
+      if(token){
+        navigate("/")
+      }
+    }, [])
+
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
@@ -19,7 +28,6 @@ const Signup = () => {
         password,
         username,
       });
-
       navigate('/login')
       console.log(res.data);
     } catch (error) {

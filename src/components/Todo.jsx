@@ -1,47 +1,101 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router";
+import axios from "axios"
 
 const Todo = () => {
   const [todos, setTodo] = useState([]);
   const [input, setInput] = useState("");
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false)
+  const [user, setUser] = useState(null)
 
   const handleChange = (e) => {
     setInput(e.target.value);
     setError("");
   };
 
-  useEffect(() => {
-    const loadData = localStorage.getItem("todos");
-    if (loadData) {
-      setTodo(JSON.parse(loadData));
+  useEffect(()=>{
+    validateUser()
+    getData()
+  }, [])
+
+  useEffect(()=>{
+    getData()
+  }, [])
+
+  const validateUser = async()=>{
+    try {
+      const token = localStorage.getItem('token')
+      if(!token){
+        navigate("/login")
+      }
+      const {data : response} = await axios.get(`http://localhost:3300/api/auth/validateToken/${token}`)
+      console.log(response.data);
+      setUser(response.data)
+    } catch (error) {
+      navigate("/login")
+      console.log(error.message);
     }
-  }, []);
+  }
 
-  const handleAdd = () => {
-    if (input === "") {
-      setError("please enter something!");
-      return;
+  const getData = async()=>{
+    try {
+      const token = localStorage.getItem('token')
+      const {data : response} = await axios.get('http://localhost:3300/api/todos',{
+        headers : {
+          Authorization : token
+        }
+      })
+      console.log(response.data);
+      setTodo(response.data)
+    } catch (error) {
+      navigate("/login")
+      console.log(error.message);
     }
-    const newTodo = {
-      id: Date.now(),
-      title: input,
-      completed: false,
-    };
+  }
 
-    const prevTodos = localStorage.getItem("todos");
-    const parsedTodos = JSON.parse(prevTodos);
-    parsedTodos.push(newTodo);
-    localStorage.setItem("todos", JSON.stringify(parsedTodos));
+  const navigate = useNavigate()
 
-    setTodo([...todos, newTodo]);
-    setInput("");
-    setError("");
+
+  // useEffect(() => {
+  //   const loadData = localStorage.getItem("todos");
+  //   if (loadData) {
+  //     setTodo(JSON.parse(loadData));
+  //   }
+  // }, []);
+
+  const handleAdd = async() => {
+    try {
+      const token = localStorage.getItem('token')
+      const {data : newTodo} = await axios.post('http://localhost:3300/api/todos',{
+        title : input
+      },{
+        headers : {
+          Authorization : token
+        }
+      })
+      setTodo((prevTodo) => [...prevTodo, newTodo.data]);
+      setInput("")
+      console.log(newTodo.data);
+    // const prevTodos = localStorage.getItem("todos");
+    // const parsedTodos = JSON.parse(prevTodos);
+    // parsedTodos.push(newTodo);
+    // localStorage.setItem("todos", JSON.stringify(parsedTodos));
+    } catch (error) {
+      console.log(error);
+      navigate('/login')
+    }
   };
 
-  const handleDelete = (id) => {
-    const filterTodo = todos.filter((todo) => todo.id !== id);
-    setTodo(filterTodo);
-    localStorage.setItem("todos", JSON.stringify(filterTodo));
+  const handleDelete = async(id) => {
+    const token = localStorage.getItem('token')
+    await axios.delete(`http://localhost:3300/api/todos/${id}`,{
+      headers : {
+        Authorization : token
+      }
+    })
+    setTodo((prevTodo)=> prevTodo.filter((todo)=>todo.id!==id))
+    // localStorage.setItem("todos", JSON.stringify(filterTodo));
   };
 
   const handleEdit = (id) => {
@@ -55,12 +109,25 @@ const Todo = () => {
       todo.id === id ? { ...todo, title: editTodo } : todo
     );
     setTodo(updateTodo);
-    localStorage.setItem("todos", JSON.stringify(updateTodo));
+    // localStorage.setItem("todos", JSON.stringify(updateTodo));
   };
+
+  const logout = ()=>{
+    localStorage.removeItem("token")
+    navigate('/login')
+  }
 
   return (
     <>
-      <h1 className="text-4xl p-3">Task List</h1>
+      {user ? (
+        <>
+          <h1 className="text-4xl p-3">Task List</h1>
+          <button
+                onClick={logout}
+                className=" border-2 w-30 rounded-md"
+              >
+                Log Out
+              </button>
       <div className="flex items-center">
         <input
           value={input}
@@ -79,7 +146,7 @@ const Todo = () => {
       {error && <p className="text-red-500 ml-5">{error}</p>}
 
       <ul>
-        {todos.length > 0 ? (
+            {todos.length > 0 ? (
           todos.map((todo) => (
             <li className="p-2 m-2 border-b-2 border-gray-200" key={todo.id}>
               {" "}
@@ -104,6 +171,8 @@ const Todo = () => {
           </p>
         )}
       </ul>
+        </>
+      ) : ("Website Loading...")}
     </>
   );
 };
