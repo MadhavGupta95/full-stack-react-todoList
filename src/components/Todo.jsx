@@ -98,18 +98,34 @@ const Todo = () => {
     // localStorage.setItem("todos", JSON.stringify(filterTodo));
   };
 
-  const handleEdit = (id) => {
-    const editTodo = prompt("Please enter updated todo : ");
+  const handleEdit = async(id) => {
+    try {
+      const editTodo = prompt("Please enter updated todo : ");
     if (editTodo === null || editTodo.trim() === "") {
       alert("Invalid input. Please enter a valid todo.");
       return;
     }
 
-    const updateTodo = todos.map((todo) =>
-      todo.id === id ? { ...todo, title: editTodo } : todo
-    );
-    setTodo(updateTodo);
+    const token = localStorage.getItem('token')
+
+    await axios.patch(`http://localhost:3300/api/todos/${id}`,{
+      title : editTodo
+    },{
+      headers : {
+        Authorization : token
+      }
+    })
+
+    setTodo((prevData) =>prevData.map((todo)=> todo.id === id ? { ...todo, title: editTodo } : todo));
+    // const updateTodo = todos.map((todo) =>
+    //   todo.id === id ? { ...todo, title: editTodo } : todo
+    // );
+    
     // localStorage.setItem("todos", JSON.stringify(updateTodo));
+    } catch (error) {
+      console.log(error);
+      navigate('/login')
+    }
   };
 
   const logout = ()=>{
